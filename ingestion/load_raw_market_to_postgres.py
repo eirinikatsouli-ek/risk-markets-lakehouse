@@ -10,7 +10,7 @@ RAW_DIR = os.path.join("data", "raw", "market_prices")
 
 DB_CONFIG = {
     "host": "localhost",
-    "port": 5433,      # host port (γιατί έξω από docker)
+    "port": 5433,
     "dbname": "riskdb",
     "user": "risk",
     "password": "risk",
@@ -44,17 +44,13 @@ def read_partition_csvs(partition_path: str) -> pd.DataFrame:
     if missing:
         raise ValueError(f"Missing columns: {missing}")
 
-    # normalize column names
     all_df.columns = [c.lower() for c in all_df.columns]
 
-    # parse date to python date
     all_df["date"] = pd.to_datetime(all_df["date"], errors="coerce").dt.date
 
-    # numeric parsing
     for c in ["open", "high", "low", "close", "volume"]:
         all_df[c] = pd.to_numeric(all_df[c], errors="coerce")
 
-    # add ingestion partition info
     dt_str = os.path.basename(partition_path).replace("dt=", "")
     all_df["partition_dt"] = dt_str
 
