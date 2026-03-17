@@ -1,148 +1,85 @@
 import os
 import io
 import json
+import time
 import logging
 from datetime import datetime, timezone
-from typing import Dict, List, Tuple
 
-import requests
 import pandas as pd
+import requests
 
 TICKERS = ["SPY", "QQQ", "IWM", "EFA", "TLT", "IEF", "GLD", "VNQ"]
+
+BASE_RAW_DIR = os.path.join("data", "raw", "market_prices")
+TIMEOUT = 30
+MAX_ATTEMPTS = 3
 
 EXPECTED_COLUMNS = ["Date", "Open", "High", "Low", "Close", "Volume"]
 NUMERIC_COLUMNS = ["Open", "High", "Low", "Close", "Volume"]
 
-BASE_RAW_DIR = os.path.join("data", "raw", "market_prices")
-REQUEST_TIMEOUT_SECONDS = 30
-
-
-def setup_logging() -> None:
-    """
-    Ρυθμίζει logging ώστε να βλέπεις καθαρά τι κάνει το script.
-    """
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s | %(levelname)s | %(message)s",
-    )
 
 def stooq_url(ticker: str) -> str:
-    """
-    Φτιάχνει το URL για daily δεδομένα από Stooq.
-    Π.χ. SPY -> https://stooq.com/q/d/l/?s=spy.us&i=d
-    """
     return f"https://stooq.com/q/d/l/?s={ticker.lower()}.us&i=d"
 
 
-def ensure_dir(path: str) -> None:
-    """
-    Φτιάχνει folder αν δεν υπάρχει. Αν υπάρχει ήδη, δεν σκάει.
-    """
-    os.makedirs(path, exist_ok=True)
+def main():
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 
-
-def validate_dataframe(df: pd.DataFrame, ticker: str) -> Tuple[bool, List[str]]:
-    """
-    Ελέγχει ότι το dataset έχει το schema που περιμένουμε και βασική ποιότητα.
-    Επιστρέφει (ok, errors).
-    """
-    errors: List[str] = []
-
-    missing = [c for c in EXPECTED_COLUMNS if c not in df.columns]
-    if missing:
-        errors.append(f"{ticker}: Missing columns: {missing}")
-    if df.empty:
-        errors.append(f"{ticker}: Dataset is empty")
-
-    if "Date" in df.columns:
-        parsed = pd.to_datetime(df["Date"], errors="coerce")
-        if parsed.isna().all():
-            errors.append(f"{ticker}: Could not parse any Date values")
-        df["Date"] = parsed.dt.date 
-
-    for col in NUMERIC_COLUMNS:
-        if col in df.columns:
-            coerced = pd.to_numeric(df[col], errors="coerce")
-            if coerced.isna().all():
-                errors.append(f"{ticker}: Column {col} could not be parsed as numeric")
-            df[col] = coerced
-
-    ok = len(errors) == 0
-    return ok, errors
-
-
-def fetch_one(ticker: str) -> pd.DataFrame:
-    """
-    Κατεβάζει το CSV για 1 ticker και το επιστρέφει ως DataFrame.
-    """
-    url = stooq_url(ticker)
-    logging.info(f"Fetching {ticker} from {url}")
-    r = requests.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
-    r.raise_for_status()
-    df = pd.read_csv(io.StringIO(r.text))
-    return df
-
-
-def write_ticker_file(df: pd.DataFrame, out_dir: str, ticker: str) -> str:
-    """
-    Γράφει ένα CSV ανά ticker μέσα σε tickers/ folder.
-    Επιστρέφει το path που γράφτηκε.
-    """
-    tickers_dir = os.path.join(out_dir, "tickers")
-    ensure_dir(tickers_dir)
-
-    out_path = os.path.join(tickers_dir, f"{ticker.lower()}.csv")
-    df.to_csv(out_path, index=False)
-    return out_path
-
-
-def write_manifest(out_dir: str, manifest: Dict) -> str:
-    """
-    Γράφει run manifest (metadata) σε JSON.
-    """
-    out_path = os.path.join(out_dir, "run_manifest.json")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(manifest, f, indent=2, ensure_ascii=False)
-    return out_path
-
-
-def main() -> None:
-    setup_logging()
     dt = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     out_dir = os.path.join(BASE_RAW_DIR, f"dt={dt}")
-    ensure_dir(out_dir)
+    tickers_dir = os.path.join(out_dir, "tickers")
+    os.makedirs(tickers_dir, exist_ok=True)
 
     run_started_utc = datetime.now(timezone.utc).isoformat()
-
     successes = []
     failures = []
 
     for ticker in TICKERS:
+        url = stooq_url(ticker)
+        logging.info(f"Fetching {ticker} from {url}")
+
         try:
-            df = fetch_one(ticker)
+            last_error = None
+            for attempt in range(1, MAX_ATTEMPTS + 1):
+                try:
+                    r = requests.get(url, timeout=TIMEOUT)
+                    r.raise_for_status()
+                    break
+                except Exception as e:
+                    last_error = e
+                    logging.warning(f"{ticker}: attempt {attempt}/{MAX_ATTEMPTS} failed: {e}")
+                    time.sleep(2 * attempt)
+            else:
+                raise last_error
+
+            df = pd.read_csv(io.StringIO(r.text))
+
+            missing = [c for c in EXPECTED_COLUMNS if c not in df.columns]
+            if missing:
+                raise ValueError(f"{ticker}: Missing columns: {missing}")
+            if df.empty:
+                raise ValueError(f"{ticker}: Empty dataset")
+
+            df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.date
+            if df["Date"].isna().all():
+                raise ValueError(f"{ticker}: Date parsing failed")
+
+            for col in NUMERIC_COLUMNS:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
 
             df["Ticker"] = ticker
 
-            ok, errors = validate_dataframe(df, ticker)
-            if not ok:
-                raise ValueError(" | ".join(errors))
-
-            out_path = write_ticker_file(df, out_dir, ticker)
+            out_path = os.path.join(tickers_dir, f"{ticker.lower()}.csv")
+            df.to_csv(out_path, index=False)
 
             successes.append(
-                {
-                    "ticker": ticker,
-                    "rows": int(len(df)),
-                    "columns": list(df.columns),
-                    "file": out_path.replace("\\", "/"),
-                }
+                {"ticker": ticker, "rows": int(len(df)), "columns": list(df.columns), "file": out_path.replace("\\", "/")}
             )
             logging.info(f"Saved {ticker}: {len(df)} rows -> {out_path}")
 
         except Exception as e:
-            msg = str(e)
-            failures.append({"ticker": ticker, "error": msg})
-            logging.error(f"FAILED {ticker}: {msg}")
+            failures.append({"ticker": ticker, "error": str(e)})
+            logging.error(f"FAILED {ticker}: {e}")
 
     run_finished_utc = datetime.now(timezone.utc).isoformat()
 
@@ -159,7 +96,10 @@ def main() -> None:
         "expected_columns": EXPECTED_COLUMNS,
     }
 
-    manifest_path = write_manifest(out_dir, manifest)
+    manifest_path = os.path.join(out_dir, "run_manifest.json")
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2, ensure_ascii=False)
+
     logging.info(f"Run manifest saved -> {manifest_path}")
 
     if len(successes) == 0:

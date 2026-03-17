@@ -1,0 +1,62 @@
+{
+  "run_started_utc": "2026-03-12T13:11:49.463384+00:00",
+  "run_finished_utc": "2026-03-12T13:11:52.524209+00:00",
+  "partition_dt": "2026-03-12",
+  "source": "stooq",
+  "pairs_requested": [
+    "EURUSD",
+    "EURGBP",
+    "USDJPY"
+  ],
+  "success_count": 3,
+  "failure_count": 0,
+  "successes": [
+    {
+      "pair": "EURUSD",
+      "rows": 14130,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Pair"
+      ],
+      "file": "data/raw/fx_rates/dt=2026-03-12/pairs/eurusd.csv"
+    },
+    {
+      "pair": "EURGBP",
+      "rows": 14090,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Pair"
+      ],
+      "file": "data/raw/fx_rates/dt=2026-03-12/pairs/eurgbp.csv"
+    },
+    {
+      "pair": "USDJPY",
+      "rows": 14132,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Pair"
+      ],
+      "file": "data/raw/fx_rates/dt=2026-03-12/pairs/usdjpy.csv"
+    }
+  ],
+  "failures": [],
+  "expected_columns": [
+    "Date",
+    "Open",
+    "High",
+    "Low",
+    "Close"
+  ]
+}

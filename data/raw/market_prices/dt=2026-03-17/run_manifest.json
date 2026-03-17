@@ -1,0 +1,141 @@
+{
+  "run_started_utc": "2026-03-17T08:35:27.783043+00:00",
+  "run_finished_utc": "2026-03-17T08:35:33.758937+00:00",
+  "partition_dt": "2026-03-17",
+  "source": "stooq",
+  "tickers_requested": [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "EFA",
+    "TLT",
+    "IEF",
+    "GLD",
+    "VNQ"
+  ],
+  "success_count": 8,
+  "failure_count": 0,
+  "successes": [
+    {
+      "ticker": "SPY",
+      "rows": 5295,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Ticker"
+      ],
+      "file": "data/raw/market_prices/dt=2026-03-17/tickers/spy.csv"
+    },
+    {
+      "ticker": "QQQ",
+      "rows": 6795,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Ticker"
+      ],
+      "file": "data/raw/market_prices/dt=2026-03-17/tickers/qqq.csv"
+    },
+    {
+      "ticker": "IWM",
+      "rows": 5295,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Ticker"
+      ],
+      "file": "data/raw/market_prices/dt=2026-03-17/tickers/iwm.csv"
+    },
+    {
+      "ticker": "EFA",
+      "rows": 5295,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Ticker"
+      ],
+      "file": "data/raw/market_prices/dt=2026-03-17/tickers/efa.csv"
+    },
+    {
+      "ticker": "TLT",
+      "rows": 5295,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Ticker"
+      ],
+      "file": "data/raw/market_prices/dt=2026-03-17/tickers/tlt.csv"
+    },
+    {
+      "ticker": "IEF",
+      "rows": 5295,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Ticker"
+      ],
+      "file": "data/raw/market_prices/dt=2026-03-17/tickers/ief.csv"
+    },
+    {
+      "ticker": "GLD",
+      "rows": 5295,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Ticker"
+      ],
+      "file": "data/raw/market_prices/dt=2026-03-17/tickers/gld.csv"
+    },
+    {
+      "ticker": "VNQ",
+      "rows": 5295,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Ticker"
+      ],
+      "file": "data/raw/market_prices/dt=2026-03-17/tickers/vnq.csv"
+    }
+  ],
+  "failures": [],
+  "expected_columns": [
+    "Date",
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume"
+  ]
+}

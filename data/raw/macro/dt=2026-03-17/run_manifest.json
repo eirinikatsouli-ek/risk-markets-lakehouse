@@ -1,0 +1,63 @@
+{
+  "run_started_utc": "2026-03-17T08:35:50.400688+00:00",
+  "run_finished_utc": "2026-03-17T08:35:52.786592+00:00",
+  "partition_dt": "2026-03-17",
+  "source": "fred",
+  "series_requested": [
+    "CPIAUCSL",
+    "FEDFUNDS",
+    "UNRATE",
+    "DGS10",
+    "VIXCLS"
+  ],
+  "success_count": 5,
+  "failure_count": 0,
+  "successes": [
+    {
+      "series": "CPIAUCSL",
+      "rows": 950,
+      "columns": [
+        "DATE",
+        "VALUE"
+      ],
+      "file": "data/raw/macro/dt=2026-03-17/series/cpiaucsl.csv"
+    },
+    {
+      "series": "FEDFUNDS",
+      "rows": 860,
+      "columns": [
+        "DATE",
+        "VALUE"
+      ],
+      "file": "data/raw/macro/dt=2026-03-17/series/fedfunds.csv"
+    },
+    {
+      "series": "UNRATE",
+      "rows": 938,
+      "columns": [
+        "DATE",
+        "VALUE"
+      ],
+      "file": "data/raw/macro/dt=2026-03-17/series/unrate.csv"
+    },
+    {
+      "series": "DGS10",
+      "rows": 16749,
+      "columns": [
+        "DATE",
+        "VALUE"
+      ],
+      "file": "data/raw/macro/dt=2026-03-17/series/dgs10.csv"
+    },
+    {
+      "series": "VIXCLS",
+      "rows": 9444,
+      "columns": [
+        "DATE",
+        "VALUE"
+      ],
+      "file": "data/raw/macro/dt=2026-03-17/series/vixcls.csv"
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,54 @@
+{
+  "run_started_utc": "2026-03-12T14:51:17.793149+00:00",
+  "run_finished_utc": "2026-03-12T15:00:23.831250+00:00",
+  "partition_dt": "2026-03-12",
+  "source": "fred",
+  "series_requested": [
+    "CPIAUCSL",
+    "FEDFUNDS",
+    "UNRATE",
+    "DGS10",
+    "VIXCLS"
+  ],
+  "success_count": 3,
+  "failure_count": 2,
+  "successes": [
+    {
+      "series": "CPIAUCSL",
+      "rows": 950,
+      "columns": [
+        "DATE",
+        "VALUE"
+      ],
+      "file": "data/raw/macro/dt=2026-03-12/series/cpiaucsl.csv"
+    },
+    {
+      "series": "FEDFUNDS",
+      "rows": 860,
+      "columns": [
+        "DATE",
+        "VALUE"
+      ],
+      "file": "data/raw/macro/dt=2026-03-12/series/fedfunds.csv"
+    },
+    {
+      "series": "UNRATE",
+      "rows": 938,
+      "columns": [
+        "DATE",
+        "VALUE"
+      ],
+      "file": "data/raw/macro/dt=2026-03-12/series/unrate.csv"
+    }
+  ],
+  "failures": [
+    {
+      "series": "DGS10",
+      "error": "HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"
+    },
+    {
+      "series": "VIXCLS",
+      "error": "HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"
+    }
+  ]
+}

@@ -80,7 +80,11 @@ def load_rows(conn, df: pd.DataFrame):
     cols = ["date", "open", "high", "low", "close", "volume", "ticker", "partition_dt"]
     rows = [tuple(x) for x in df[cols].to_numpy()]
 
+    partition_dt = df["partition_dt"].iloc[0]
+
     with conn.cursor() as cur:
+        cur.execute("DELETE FROM raw.market_prices WHERE partition_dt = %s;", (partition_dt,))
+
         execute_values(
             cur,
             """
@@ -90,6 +94,7 @@ def load_rows(conn, df: pd.DataFrame):
             rows,
             page_size=5000
         )
+
     conn.commit()
 
 def main():
