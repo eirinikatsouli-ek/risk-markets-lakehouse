@@ -11,9 +11,8 @@ import requests
 SERIES = ["CPIAUCSL", "FEDFUNDS", "UNRATE", "DGS10", "VIXCLS"]
 
 BASE_RAW_DIR = os.path.join("data", "raw", "macro")
-TIMEOUT = 60
-MAX_ATTEMPTS = 3
-
+TIMEOUT = 120
+MAX_ATTEMPTS = 5
 
 def fred_csv_url(series_id: str) -> str:
     return f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"

@@ -11,7 +11,10 @@ DB_CONFIG = {
 
 
 def setup_logging():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(message)s"
+    )
 
 
 def main():
@@ -28,11 +31,34 @@ def main():
             cur.execute("DROP TABLE IF EXISTS curated.market_features_daily;")
 
             logging.info("Creating curated.market_features_daily...")
-
             cur.execute(
                 """
                 CREATE TABLE curated.market_features_daily AS
-                WITH base AS (
+                WITH ranked_prices AS (
+                    SELECT
+                        date,
+                        ticker,
+                        close,
+                        partition_dt,
+                        loaded_at,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY ticker, date
+                            ORDER BY partition_dt DESC, loaded_at DESC
+                        ) AS rn
+                    FROM silver.market_prices_clean
+                    WHERE date IS NOT NULL
+                      AND ticker IS NOT NULL
+                      AND close IS NOT NULL
+                ),
+                deduped_prices AS (
+                    SELECT
+                        date,
+                        ticker,
+                        close
+                    FROM ranked_prices
+                    WHERE rn = 1
+                ),
+                base AS (
                     SELECT
                         date,
                         ticker,
@@ -41,7 +67,7 @@ def main():
                             PARTITION BY ticker
                             ORDER BY date
                         ) AS prev_close
-                    FROM silver.market_prices_clean
+                    FROM deduped_prices
                 ),
                 returns_calc AS (
                     SELECT
@@ -98,14 +124,15 @@ def main():
                         WHEN running_peak_close IS NULL OR running_peak_close = 0 THEN NULL
                         ELSE (close / running_peak_close) - 1
                     END AS drawdown
-                FROM features;
+                FROM features
+                ORDER BY ticker, date;
                 """
             )
 
-            logging.info("Adding index on ticker, date...")
+            logging.info("Adding unique index on ticker, date...")
             cur.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_curated_market_features_daily_ticker_date
+                CREATE UNIQUE INDEX idx_curated_market_features_daily_ticker_date
                 ON curated.market_features_daily (ticker, date);
                 """
             )
